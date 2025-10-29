@@ -5,6 +5,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#include "stats.h" 
+
 typedef struct {
     // SDL components
     SDL_Window* window;
@@ -17,6 +19,8 @@ typedef struct {
     // Application state
     int running;
     int selectedAlgorithm;
+
+    Stats_t* stats;
 
 } App_Window;
 
