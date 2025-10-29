@@ -141,7 +141,8 @@ void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm) {
     drawText(renderer, font, "3: Insertion Sort", menuX, 100, white, (selectedAlgorithm == 3));
 
     drawText(renderer, font, "S: Start Sort", menuX, 200, yellow, 0);
-    drawText(renderer, font, "R: Reset Array", menuX, 230, yellow, 0);
+    drawText(renderer, font, "E: Stop Sort", menuX, 230, yellow, 0);
+    drawText(renderer, font, "R: Reset Array", menuX, 260, yellow, 0);
 }
 
 // Draw the sorting bars
