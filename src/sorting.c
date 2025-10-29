@@ -148,3 +148,52 @@ void insertion_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
         tab[j + 1] = key;
     }
 }
+
+int partition(int *tab, int low, int high, SDL_Renderer* renderer, TTF_Font* font) {
+
+    int running = 1; // Local flag to check if the user closes the window
+    int actionCode = 0; // Need to stop the sort
+
+    int pivot=high;
+    int j=low;
+
+    for (int i = low; i < high; i++) {
+        if(tab[i]<tab[pivot]) {
+            int temp = tab[i];
+            tab[i] = tab[j];
+            tab[j] = temp;
+            j++;
+            // --- VISUALIZATION: Show current key and comparison position ---
+        actionCode = handleEvents(&running);
+        if (!running || actionCode ==50) return j;
+        renderApp(renderer, font, tab, high, i, j, 1);
+        SDL_Delay(20);
+        }
+        // --- VISUALIZATION: Show current key and comparison position ---
+        actionCode = handleEvents(&running);
+        if (!running || actionCode ==50) return j;
+        renderApp(renderer, font, tab, high, i, pivot, 1);
+        SDL_Delay(20);
+    }
+    int temp = tab[j];
+    tab[j] = tab[pivot];
+    tab[pivot] = temp;
+
+    return j;
+}
+
+void quick_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
+    
+    //int running = 1; // Local flag to check if the user closes the window
+    //int actionCode = 0; // Need to stop the sort
+
+    if (size < 2) return;
+
+    int pivot = partition(tab, 0, size - 1, renderer, font);
+
+    
+    
+    quick_sort(tab, pivot, renderer, font);
+    quick_sort(tab + pivot + 1, size - pivot - 1, renderer, font);
+
+}  

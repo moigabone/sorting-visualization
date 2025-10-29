@@ -141,6 +141,7 @@ void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm) {
     drawText(renderer, font, "1: Bubble Sort", menuX, 40, white, (selectedAlgorithm == 1));
     drawText(renderer, font, "2: Selection Sort", menuX, 70, white, (selectedAlgorithm == 2));
     drawText(renderer, font, "3: Insertion Sort", menuX, 100, white, (selectedAlgorithm == 3));
+    drawText(renderer, font, "4: Quick Sort", menuX, 130, white, (selectedAlgorithm == 4));
 
     drawText(renderer, font, "S: Start Sort", menuX, 200, green, 0);
     drawText(renderer, font, "E: Stop Sort", menuX, 230, red, 0);

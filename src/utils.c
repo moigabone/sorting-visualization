@@ -42,6 +42,9 @@ void runMainLoop(App_Window* app) {
                 case 3:
                     insertion_sort(app->array, N, app->renderer, app->font);
                     break;
+                case 4:
+                    quick_sort(app->array, N, app->renderer, app->font);
+                    break;
                 default:
                     printf("No algorithm selected!\n");
                     break;
@@ -88,7 +91,11 @@ int handleEvents(int* running) {
                     printf("Key 3 pressed: Requesting Insertion Sort\n");
                     return 3; // actionCode for case
                 
-                // ... SDLK_4  SDLK_5 QuickSort MergeSort) ...
+                // case '4'
+                case SDLK_4:
+                case SDLK_KP_4:
+                    printf("Key 4 pressed: Requesting Quick Sort\n");
+                    return 4; // actionCode for case
 
                 // 'r' to unsort the window
                 case SDLK_r:
