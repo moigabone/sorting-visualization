@@ -121,9 +121,18 @@ int* createRandomArray(int size, int maxValue) {
     //loop to fill the array
     for (int i = 0; i < size; i++) {
        
-        array[i] = (rand() % maxValue) + 1;  // We add +1 to avoid 0-height bars (values from 1 to maxValue)
+        array[i] = (int)(((double)i / (size - 1)) * (maxValue - 1)) + 1;
+        //array[i] = (rand() % maxValue) + 1;  // We add +1 to avoid 0-height bars (values from 1 to maxValue)
     }
-    
+    // Shuffle
+    // Start from last and shuffle
+    for (int i = size - 1; i > 0; i--) {
+        int j = rand() % (i + 1); 
+        // switch array[i] with index j
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
     // We return the pointer to the array so main.c can use it.
     return array;
 }
