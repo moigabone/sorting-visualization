@@ -1,6 +1,7 @@
 #include "sorting.h"
 #include "visual.h" // for renderApp (drawing the array)
 #include "utils.h"  // for handleEvents (to prevent window freeze)
+#include "stats.h"
 #include <SDL2/SDL_ttf.h>
 
 /*
@@ -14,38 +15,50 @@
   - Small delay added for smooth animation
 ----------------------------------------------------
 */
-void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
+void bubble_sort(App_Window* app) {
     
     int running = 1; // Local flag to check if the user closes the window
     int actionCode = 0; // Need to stop the sort
+
+    int size= N; //from main.h
+    int* tab = app->array; //access to the array from the struct 
 
     for (int i = 0; i < size - 1; i++) {
         int swapped = 0; // Track if any swaps happened during this pass
 
         for (int j = 0; j < size - 1 - i; j++) {
-
             // --- VISUALIZATION: Comparison ---
             actionCode = handleEvents(&running); // Keep window responsive
-            if (!running || actionCode == 50) return;   // Stop sorting if user closes the window
+            if (!running) { app->running = 0; return; } //stop everything
+            if (actionCode == 50) return;   // Stop sorting if user closes the window
+
+             //Stats
+            app->stats->comparisons++; 
+            app->stats->memoryAccesses += 2;
+
             
             // Redraw the array, highlighting compared elements
             // j = red, j+1 = green
-            renderApp(renderer, font, tab, size, j, j + 1, 1);
+            renderApp(app, j, j + 1);
             SDL_Delay(5); // Short delay to make animation visible
 
-            // --- LOGIC: Swap if needed ---
+            // Swap if needed ---
             if (tab[j] > tab[j + 1]) {
+
+                //stats
+                app->stats->memoryAccesses += 3;
+
                 int tmp = tab[j];
                 tab[j] = tab[j + 1];
                 tab[j + 1] = tmp;
                 swapped = 1;
 
                 // --- VISUALIZATION: Swap ---
-                actionCode = handleEvents(&running);
-                if (!running ||actionCode == 50) return;
+                if (!running) { app->running = 0; return; }
+                if (actionCode == 50) return;
                 
                 // Redraw immediately to show result of the swap
-                renderApp(renderer, font, tab, size, j, j + 1, 1);
+                renderApp(app, j, j + 1);
                 SDL_Delay(5); // Slightly longer delay on swap
             }
         }
@@ -55,7 +68,7 @@ void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
     }
 
     // --- FINAL VISUALIZATION: Draw sorted array ---
-    renderApp(renderer, font, tab, size, -1, -1, 1); // no highlight
+    renderApp(app, -1, -1); // no highlight
 }
 
 
@@ -69,37 +82,50 @@ void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
  Visual updates happen after comparisons and swaps.
 ----------------------------------------------------
 */
-void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
+void selection_sort(App_Window* app) {
 
     int running = 1; // Local flag to check if the user closes the window
     int actionCode = 0; // Need to stop the sort
+
+    int size = N;
+    int* tab = app->array;
 
     for (int i = 0; i < size - 1; i++) {
         int minimum = i; // Index of the smallest element in the unsorted part
 
         // Find smallest element in the remaining array
         for (int j = i + 1; j < size; j++) {
+            //stats
+            app->stats->comparisons++;
+            app->stats->memoryAccesses += 2; // read tab[j] and tab[minimum]
+
+
             if (tab[j] < tab[minimum]) {
-                minimum = j;
+                minimum = j;    
             }
         }
 
         // --- VISUALIZATION: Highlight current position and minimum ---
         actionCode = handleEvents(&running);
-        if (!running || actionCode ==50) return;
-        renderApp(renderer, font, tab, size, i, minimum, 1);
+        if (!running) { app->running = 0; return; }
+        if (actionCode == 50) return;
+        renderApp(app, i, minimum);
         SDL_Delay(20);
 
         // Swap if needed
         if (minimum != i) {
+            //stats
+            app->stats->memoryAccesses += 4; // 4 access : 2 read, 2 write) ---
+
             int tmp = tab[i];
             tab[i] = tab[minimum];
             tab[minimum] = tmp;
 
             // --- VISUALIZATION: After swap ---
             actionCode = handleEvents(&running);
-            if (!running || actionCode == 50) return;
-            renderApp(renderer, font, tab, size, i, minimum, 1);
+            if (!running) { app->running = 0; return; }
+            if (actionCode == 50) return;
+            renderApp(app, i, minimum);
             SDL_Delay(20);
         }   
     }
@@ -117,33 +143,48 @@ void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
  Visual updates show the shifting process in real time.
 ----------------------------------------------------
 */
-void insertion_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
+void insertion_sort(App_Window* app) {
 
     int running = 1; // Local flag to check if the user closes the window
     int actionCode = 0; // Need to stop the sort
 
+    int size = N;
+    int* tab = app->array;
+
     for (int i = 1; i < size; i++) {
+        // Stats (1 read)
+        app->stats->memoryAccesses++;
         int key = tab[i]; // Element to insert
         int j = i - 1;
 
         // --- VISUALIZATION: Show current key and comparison position ---
         actionCode = handleEvents(&running);
-        if (!running || actionCode ==50) return;
-        renderApp(renderer, font, tab, size, j, i, 1);
+        if (!running) { app->running = 0; return; }
+        if (actionCode == 50) return;
+        renderApp(app, j, i);
         SDL_Delay(20);
 
+        //Stats (1 comparison, 1 read)
+        app->stats->comparisons++;
+        app->stats->memoryAccesses++;
         // Shift larger elements to the right
         while (j >= 0 && tab[j] > key) {
+            //Stats (1 write, 1 read)
+            app->stats->memoryAccesses += 2; // tab[j] already read
             tab[j + 1] = tab[j];
             j--;
 
             // --- VISUALIZATION: Show shifting in progress ---
             actionCode = handleEvents(&running);
-            if (!running || actionCode == 50) return;
-            renderApp(renderer, font, tab, size, j, i, 1);
+            if (!running) { app->running = 0; return; }
+            if (actionCode == 50) return;
+            renderApp(app, j, i);
             SDL_Delay(20);
         }
 
+        
+        //Stats (1 write) 
+        app->stats->memoryAccesses++;
         // Insert the key into its correct position
         tab[j + 1] = key;
     }

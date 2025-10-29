@@ -2,6 +2,7 @@
 #include "visual.h"
 #include "main.h"   // For global constants (N, WINDOW_WIDTH, etc.)
 #include "utils.h"  // For createRandomArray (part of init)
+#include "stats.h"
 #include <stdio.h>  // For error messages
 #include <stdlib.h> // For malloc/free
 
@@ -70,18 +71,27 @@ App_Window* initAppVisuals() {
         return NULL;
     }
 
-    // 8. Set initial state
+    //stats
+    app->stats = createStats();
+    if (app->stats == NULL){
+        fprintf(stderr, "Failed to create stats struct.\n");
+        cleanupAppVisuals(app);
+        return NULL;
+    }
+
+    // Set initial state
     app->running = 1;
     app->selectedAlgorithm = 0;
 
     printf("SDL & TTF initialization successful!\n");
-    return app; // Return the fully initialized app
+    return app;
 }
 
 
 void cleanupAppVisuals(App_Window* app) {
     if (app == NULL) return; 
 
+    freeStats(app->stats);
     // Free all resources in reverse order of creation
     // Check if pointers are not NULL before freeing/destroying
     if (app->array) free(app->array);
@@ -148,6 +158,31 @@ void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm) {
     drawText(renderer, font, "R: Reset Array", menuX, 260, yellow, 0);
 }
 
+// Draw the top left performance menu
+void drawStats(SDL_Renderer* renderer, TTF_Font* font, Stats_t* stats) {
+    
+    SDL_Rect statsBg = { 10, 10, 250, 85 };
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // clear background
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180); // Black
+    SDL_RenderFillRect(renderer, &statsBg);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    SDL_Color white = {255, 255, 255, 255};
+    
+    char timeText[100];
+    char compText[100];
+    char accessText[100];
+
+    // read values from the 'stats' pointer 
+    sprintf(timeText,   "Execution time : %.5f s", stats->executionTime);
+    sprintf(compText,   "Comparisons : %lld", stats->comparisons);
+    sprintf(accessText, "Memory accesses : %lld", stats->memoryAccesses);
+
+    drawText(renderer, font, timeText,   20, 20, white, 0);
+    drawText(renderer, font, compText,   20, 45, white, 0);
+    drawText(renderer, font, accessText, 20, 70, white, 0);
+}
+
 // Draw the sorting bars
 void drawArray(SDL_Renderer* renderer, int* array, int size, int highlight1, int highlight2) {
     int sortZoneWidth = 600; 
@@ -175,12 +210,13 @@ void drawArray(SDL_Renderer* renderer, int* array, int size, int highlight1, int
 }
 
 // Render everything
-void renderApp(SDL_Renderer* renderer, TTF_Font* font, int* array, int size, 
-               int highlight1, int highlight2, int selectedAlgorithm) 
+void renderApp(App_Window* app, int highlight1, int highlight2) 
 {    
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    drawArray(renderer, array, size, highlight1, highlight2);
-    drawLegend(renderer, font, selectedAlgorithm);
-    SDL_RenderPresent(renderer);
+    SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(app->renderer);
+    drawArray(app->renderer, app->array, N, highlight1, highlight2);
+    drawLegend(app->renderer, app->font, app->selectedAlgorithm);
+    drawStats(app->renderer, app->font, app->stats);
+    SDL_RenderPresent(app->renderer);
+    
 }

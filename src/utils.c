@@ -2,6 +2,7 @@
 #include "main.h"
 #include "visual.h"
 #include "sorting.h"
+#include "stats.h"
 #include <time.h>   
 #include <stdlib.h> // For rand() and malloc()
 #include <SDL2/SDL.h>
@@ -27,20 +28,24 @@ void runMainLoop(App_Window* app) {
             if (app->array == NULL) {
                 fprintf(stderr, "Failed to reset array.\n");
                 app->running = 0; // Exit on error
+            resetStats(app->stats);
             }
         }
-                      
 
         else if (actionCode == 100) { // 'S' = Start
+            // Reset stats and start timer
+            resetStats(app->stats); 
+            Uint64 startTicks = SDL_GetPerformanceCounter();
+            
             switch (app->selectedAlgorithm) {
                 case 1:
-                    bubble_sort(app->array, N, app->renderer, app->font); 
+                    bubble_sort(app); 
                     break;
                 case 2:
-                    selection_sort(app->array, N, app->renderer, app->font); 
+                    selection_sort(app); 
                     break;
                 case 3:
-                    insertion_sort(app->array, N, app->renderer, app->font);
+                    insertion_sort(app);
                     break;
                 case 4:
                     quick_sort(app->array, N, app->renderer, app->font);
@@ -49,10 +54,16 @@ void runMainLoop(App_Window* app) {
                     printf("No algorithm selected!\n");
                     break;
             }
+            //The the timer and save the time
+            Uint64 endTicks = SDL_GetPerformanceCounter();
+            Uint64 frequency = SDL_GetPerformanceFrequency();
+            
+            // save the time into the stats struct
+            app->stats->executionTime = (double)(endTicks - startTicks) / frequency;
         }
 
         // 3. DRAWING
-        renderApp(app->renderer, app->font, app->array, N, -1, -1, app->selectedAlgorithm);
+        renderApp(app, -1, -1);
 
         SDL_Delay(16);
     }
@@ -128,8 +139,9 @@ int* createRandomArray(int size, int maxValue) {
     //loop to fill the array
     for (int i = 0; i < size; i++) {
        
+        //new 'random', lead to have a perfect line after the sort and not an irregular line
         array[i] = (int)(((double)i / (size - 1)) * (maxValue - 1)) + 1;
-        //array[i] = (rand() % maxValue) + 1;  // We add +1 to avoid 0-height bars (values from 1 to maxValue)
+        //array[i] = (rand() % maxValue) + 1;  // We add +1 to avoid 0-height bars (values from 1 to maxValue) // OLD RANDOM
     }
     // Shuffle
     // Start from last and shuffle
