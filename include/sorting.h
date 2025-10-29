@@ -11,6 +11,9 @@ void bubble_sort(int* array, int size, SDL_Renderer* renderer,TTF_Font* font);
 void selection_sort(int* array, int size, SDL_Renderer* renderer,TTF_Font* font); 
 
 //implemented in sorting.c
-void insertion_sort(int* array, int size, SDL_Renderer* renderer,TTF_Font* font); 
+void insertion_sort(int* array, int size, SDL_Renderer* renderer,TTF_Font* font);
+
+//implemented in sorting.c
+void quick_sort(int* array, int size, SDL_Renderer* renderer,TTF_Font* font);
 
 #endif 
