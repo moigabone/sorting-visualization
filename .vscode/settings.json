@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "visual.C": "cpp",
+        "sdl.h": "c",
+        "sdl_ttf.h": "c"
+    }
+}
