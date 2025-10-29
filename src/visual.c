@@ -1,7 +1,103 @@
 // src/visual.c
 #include "visual.h"
-#include "main.h"
-#include <SDL2/SDL_ttf.h>
+#include "main.h"   // For global constants (N, WINDOW_WIDTH, etc.)
+#include "utils.h"  // For createRandomArray (part of init)
+#include <stdio.h>  // For error messages
+#include <stdlib.h> // For malloc/free
+
+
+App_Window* initAppVisuals() {
+    // 1. Allocate memory for the App struct itself
+    App_Window* app = (App_Window*)malloc(sizeof(App_Window));
+    if (app == NULL) {
+        fprintf(stderr, "Failed to allocate memory for App struct.\n");
+        return NULL;
+    }
+    // Set pointers to NULL initially for safe cleanup
+    app->window = NULL;
+    app->renderer = NULL;
+    app->font = NULL;
+    app->array = NULL;
+
+
+    // 2. Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
+        cleanupAppVisuals(app); // Call cleanup (handles partial init)
+        return NULL;
+    }
+
+    // 3. Initialize TTF
+    if (TTF_Init() == -1) {
+        fprintf(stderr, "TTF initialization failed: %s\n", TTF_GetError());
+        cleanupAppVisuals(app);
+        return NULL;
+    }
+
+    // 4. Create Window
+    app->window = SDL_CreateWindow(
+        "Project C - Sorting Visualization",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN
+    );
+    if (app->window == NULL) {
+        fprintf(stderr, "Window creation failed: %s\n", SDL_GetError());
+        cleanupAppVisuals(app);
+        return NULL;
+    }
+
+    // 5. Create Renderer
+    app->renderer = SDL_CreateRenderer(app->window, -1, SDL_RENDERER_ACCELERATED);
+    if (app->renderer == NULL) {
+        fprintf(stderr, "Renderer creation failed: %s\n", SDL_GetError());
+        cleanupAppVisuals(app);
+        return NULL;
+    }
+
+    // 6. Load Font 
+    app->font = TTF_OpenFont("font.otf", 18);
+    if (app->font == NULL) {
+        fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
+        cleanupAppVisuals(app);
+        return NULL;
+    }
+
+    // 7. Create Array (Data is initialized along with visuals here)
+    app->array = createRandomArray(N, WINDOW_HEIGHT - 50); // 50px margin
+    if (app->array == NULL) {
+        fprintf(stderr, "Failed to create array (malloc failed).\n");
+        cleanupAppVisuals(app);
+        return NULL;
+    }
+
+    // 8. Set initial state
+    app->running = 1;
+    app->selectedAlgorithm = 0;
+
+    printf("SDL & TTF initialization successful!\n");
+    return app; // Return the fully initialized app
+}
+
+
+void cleanupAppVisuals(App_Window* app) {
+    if (app == NULL) return; 
+
+    // Free all resources in reverse order of creation
+    // Check if pointers are not NULL before freeing/destroying
+    if (app->array) free(app->array);
+    if (app->font) TTF_CloseFont(app->font);
+    if (app->renderer) SDL_DestroyRenderer(app->renderer);
+    if (app->window) SDL_DestroyWindow(app->window);
+    
+    // Quit SDL subsystems only after destroying components
+    TTF_Quit();
+    SDL_Quit();
+    
+    // Free the struct itself
+    free(app);
+    printf("Cleanup complete.\n"); 
+}
+
 
 // Helper function to draw text
 void drawText(SDL_Renderer* renderer, TTF_Font* font, const char* text, 
@@ -19,10 +115,8 @@ void drawText(SDL_Renderer* renderer, TTF_Font* font, const char* text,
     SDL_Rect destRect = { x, y, surface->w, surface->h };
     SDL_RenderCopy(renderer, texture, NULL, &destRect);
 
-    // If selected, draw a white border
     if (isSelected) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        // Add a small padding to the border
         SDL_Rect borderRect = { destRect.x - 2, destRect.y - 2, destRect.w + 4, destRect.h + 4 };
         SDL_RenderDrawRect(renderer, &borderRect);
     }
@@ -35,48 +129,35 @@ void drawText(SDL_Renderer* renderer, TTF_Font* font, const char* text,
 void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm) {
     int menuX = 610; 
     
-    // 1. Draw menu background
     SDL_Rect menuBg = { menuX - 10, 0, 200, WINDOW_HEIGHT };
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255); // Dark grey
     SDL_RenderFillRect(renderer, &menuBg);
 
-    // 2. Define colors
     SDL_Color white = {255, 255, 255, 255};
     SDL_Color yellow = {255, 255, 0, 255};
 
-    // 3. Draw sorting options
     drawText(renderer, font, "1: Bubble Sort", menuX, 40, white, (selectedAlgorithm == 1));
     drawText(renderer, font, "2: Selection Sort", menuX, 70, white, (selectedAlgorithm == 2));
     drawText(renderer, font, "3: Insertion Sort", menuX, 100, white, (selectedAlgorithm == 3));
-    // ... (add 4 and 5 here) ...
 
-    // 4. Draw instructions
     drawText(renderer, font, "S: Start Sort", menuX, 200, yellow, 0);
     drawText(renderer, font, "R: Reset Array", menuX, 230, yellow, 0);
 }
 
-// --- THIS IS THE CORRECTED FUNCTION ---
+// Draw the sorting bars
 void drawArray(SDL_Renderer* renderer, int* array, int size, int highlight1, int highlight2) {
-    
-    int sortZoneWidth = 600; // Bars stop at 600px
-    // Get height from the global constant
+    int sortZoneWidth = 600; 
     int windowHeight = WINDOW_HEIGHT; 
-    
     float barWidth = (float)sortZoneWidth / size;
 
-    // Loop through each element
     for (int i = 0; i < size; i++) {
-        
-        // --- THIS CODE WAS MISSING ---
         int barHeight = array[i];
-        
         SDL_Rect bar;
         bar.x = (int)(i * barWidth);
         bar.w = (int)barWidth;
-        bar.y = windowHeight - barHeight; // Y-axis is 0 at the top
+        bar.y = windowHeight - barHeight; 
         bar.h = barHeight;
 
-        // Set color based on highlight status
         if (i == highlight1) {
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
         } else if (i == highlight2) {
@@ -86,24 +167,16 @@ void drawArray(SDL_Renderer* renderer, int* array, int size, int highlight1, int
         }
         
         SDL_RenderFillRect(renderer, &bar);
-        // --- END OF MISSING CODE ---
     }
 }
 
-// This function renders all components
+// Render everything
 void renderApp(SDL_Renderer* renderer, TTF_Font* font, int* array, int size, 
                int highlight1, int highlight2, int selectedAlgorithm) 
 {    
-    // Clear the whole screen to black
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
-    // 2. Draw the bars
     drawArray(renderer, array, size, highlight1, highlight2);
-
-    // 3. Draw the legend on top
     drawLegend(renderer, font, selectedAlgorithm);
-
-    // 4. Present to the window
     SDL_RenderPresent(renderer);
 }

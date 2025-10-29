@@ -1,7 +1,58 @@
-#include "utils.h"  
+#include "utils.h"
+#include "main.h"
+#include "visual.h"
+#include "sorting.h"
 #include <time.h>   
 #include <stdlib.h> // For rand() and malloc()
 #include <SDL2/SDL.h>
+
+// --- NEW FUNCTION (moved from app.c) ---
+void runMainLoop(App_Window* app) {
+    int actionCode = 0;
+
+    printf("Press 1, 2, or 3. Then 'S' to Start. 'R' to Reset.\n");
+    
+    while (app->running) {
+        
+        // 1. EVENT HANDLING
+        actionCode = handleEvents(&app->running);
+        
+        // 2. LOGIC
+        if (actionCode > 0 && actionCode < 10) {
+            app->selectedAlgorithm = actionCode;
+        }
+        else if (actionCode == 99) { // 'R' = Reset
+            free(app->array);
+            app->array = createRandomArray(N, WINDOW_HEIGHT - 50);
+            app->selectedAlgorithm = 0;
+            if (app->array == NULL) {
+                fprintf(stderr, "Failed to reset array.\n");
+                app->running = 0; // Exit on error
+            }
+        }
+        else if (actionCode == 100) { // 'S' = Start
+            switch (app->selectedAlgorithm) {
+                case 1:
+                    bubble_sort(app->array, N, app->renderer, app->font); 
+                    break;
+                case 2:
+                    selection_sort(app->array, N, app->renderer, app->font); 
+                    break;
+                case 3:
+                    insertion_sort(app->array, N, app->renderer, app->font);
+                    break;
+                default:
+                    printf("No algorithm selected!\n");
+                    break;
+            }
+        }
+
+        // 3. DRAWING
+        renderApp(app->renderer, app->font, app->array, N, -1, -1, app->selectedAlgorithm);
+
+        SDL_Delay(16); // ~60 FPS
+    }
+}
 
 int handleEvents(int* running) {
     SDL_Event event;
