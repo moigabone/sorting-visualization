@@ -17,6 +17,7 @@
 void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
     
     int running = 1; // Local flag to check if the user closes the window
+    int actionCode = 0; // Need to stop the sort
 
     for (int i = 0; i < size - 1; i++) {
         int swapped = 0; // Track if any swaps happened during this pass
@@ -24,8 +25,8 @@ void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
         for (int j = 0; j < size - 1 - i; j++) {
 
             // --- VISUALIZATION: Comparison ---
-            handleEvents(&running); // Keep window responsive
-            if (!running) return;   // Stop sorting if user closes the window
+            actionCode = handleEvents(&running); // Keep window responsive
+            if (!running || actionCode == 50) return;   // Stop sorting if user closes the window
             
             // Redraw the array, highlighting compared elements
             // j = red, j+1 = green
@@ -40,8 +41,8 @@ void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
                 swapped = 1;
 
                 // --- VISUALIZATION: Swap ---
-                handleEvents(&running);
-                if (!running) return;
+                actionCode = handleEvents(&running);
+                if (!running ||actionCode == 50) return;
                 
                 // Redraw immediately to show result of the swap
                 renderApp(renderer, font, tab, size, j, j + 1, 1);
@@ -71,6 +72,7 @@ void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
 void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
 
     int running = 1; // Local flag to check if the user closes the window
+    int actionCode = 0; // Need to stop the sort
 
     for (int i = 0; i < size - 1; i++) {
         int minimum = i; // Index of the smallest element in the unsorted part
@@ -83,8 +85,8 @@ void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
         }
 
         // --- VISUALIZATION: Highlight current position and minimum ---
-        handleEvents(&running);
-        if (!running) return;
+        actionCode = handleEvents(&running);
+        if (!running || actionCode ==50) return;
         renderApp(renderer, font, tab, size, i, minimum, 1);
         SDL_Delay(150);
 
@@ -95,8 +97,8 @@ void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
             tab[minimum] = tmp;
 
             // --- VISUALIZATION: After swap ---
-            handleEvents(&running);
-            if (!running) return;
+            actionCode = handleEvents(&running);
+            if (!running || actionCode == 50) return;
             renderApp(renderer, font, tab, size, i, minimum, 1);
             SDL_Delay(150);
         }   
@@ -118,14 +120,15 @@ void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
 void insertion_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
 
     int running = 1; // Local flag to check if the user closes the window
+    int actionCode = 0; // Need to stop the sort
 
     for (int i = 1; i < size; i++) {
         int key = tab[i]; // Element to insert
         int j = i - 1;
 
         // --- VISUALIZATION: Show current key and comparison position ---
-        handleEvents(&running);
-        if (!running) return;
+        actionCode = handleEvents(&running);
+        if (!running || actionCode ==50) return;
         renderApp(renderer, font, tab, size, j, i, 1);
         SDL_Delay(150);
 
@@ -135,8 +138,8 @@ void insertion_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
             j--;
 
             // --- VISUALIZATION: Show shifting in progress ---
-            handleEvents(&running);
-            if (!running) return;
+            actionCode = handleEvents(&running);
+            if (!running || actionCode == 50) return;
             renderApp(renderer, font, tab, size, j, i, 1);
             SDL_Delay(150);
         }

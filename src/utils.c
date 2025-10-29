@@ -6,11 +6,10 @@
 #include <stdlib.h> // For rand() and malloc()
 #include <SDL2/SDL.h>
 
-// --- NEW FUNCTION (moved from app.c) ---
 void runMainLoop(App_Window* app) {
     int actionCode = 0;
 
-    printf("Press 1, 2, or 3. Then 'S' to Start. 'R' to Reset.\n");
+    printf("Press 1, 2, or 3. Then 'S' to Start. 'R' to Reset. 'E' to Stop. '\n");
     
     while (app->running) {
         
@@ -23,13 +22,15 @@ void runMainLoop(App_Window* app) {
         }
         else if (actionCode == 99) { // 'R' = Reset
             free(app->array);
-            app->array = createRandomArray(N, WINDOW_HEIGHT - 50);
+            app->array = createRandomArray(N, WINDOW_HEIGHT);
             app->selectedAlgorithm = 0;
             if (app->array == NULL) {
                 fprintf(stderr, "Failed to reset array.\n");
                 app->running = 0; // Exit on error
             }
         }
+                      
+
         else if (actionCode == 100) { // 'S' = Start
             switch (app->selectedAlgorithm) {
                 case 1:
@@ -50,7 +51,7 @@ void runMainLoop(App_Window* app) {
         // 3. DRAWING
         renderApp(app->renderer, app->font, app->array, N, -1, -1, app->selectedAlgorithm);
 
-        SDL_Delay(16); // ~60 FPS
+        SDL_Delay(16);
     }
 }
 
@@ -69,19 +70,19 @@ int handleEvents(int* running) {
        // Action with keyboard
         if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
-                // Touche '1'
+                // case '1'
                 case SDLK_1:
                 case SDLK_KP_1:
                     printf("Key 1 pressed: Requesting Bubble Sort\n");
                     return 1; // actionCode for case
 
-                // Touche '2'
+                // case '2'
                 case SDLK_2:
                 case SDLK_KP_2:
                     printf("Key 2 pressed: Requesting Selection Sort\n");
                     return 2; // actionCode for case
                 
-                // Touche '3'
+                // case '3'
                 case SDLK_3:
                 case SDLK_KP_3:
                     printf("Key 3 pressed: Requesting Insertion Sort\n");
@@ -97,6 +98,10 @@ int handleEvents(int* running) {
                 case SDLK_s:
                     printf("Key S pressed: Starting Sort\n");
                     return 100; // actionCode for case
+
+                case SDLK_e:
+                    printf("Key E pressed: Stopping Sort\n");
+                    return 50;
             }
         }   
     }
