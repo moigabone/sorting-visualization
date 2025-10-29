@@ -55,7 +55,7 @@ App_Window* initAppVisuals() {
     }
 
     // 6. Load Font 
-    app->font = TTF_OpenFont("font.otf", 18);
+    app->font = TTF_OpenFont("font.otf", 22);
     if (app->font == NULL) {
         fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
         cleanupAppVisuals(app);
@@ -63,7 +63,7 @@ App_Window* initAppVisuals() {
     }
 
     // 7. Create Array (Data is initialized along with visuals here)
-    app->array = createRandomArray(N, WINDOW_HEIGHT - 50); // 50px margin
+    app->array = createRandomArray(N, WINDOW_HEIGHT); // 50px margin
     if (app->array == NULL) {
         fprintf(stderr, "Failed to create array (malloc failed).\n");
         cleanupAppVisuals(app);
@@ -135,13 +135,15 @@ void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm) {
 
     SDL_Color white = {255, 255, 255, 255};
     SDL_Color yellow = {255, 255, 0, 255};
+    SDL_Color red = {255, 0, 0, 255};
+    SDL_Color green = {0, 255, 127, 255};
 
     drawText(renderer, font, "1: Bubble Sort", menuX, 40, white, (selectedAlgorithm == 1));
     drawText(renderer, font, "2: Selection Sort", menuX, 70, white, (selectedAlgorithm == 2));
     drawText(renderer, font, "3: Insertion Sort", menuX, 100, white, (selectedAlgorithm == 3));
 
-    drawText(renderer, font, "S: Start Sort", menuX, 200, yellow, 0);
-    drawText(renderer, font, "E: Stop Sort", menuX, 230, yellow, 0);
+    drawText(renderer, font, "S: Start Sort", menuX, 200, green, 0);
+    drawText(renderer, font, "E: Stop Sort", menuX, 230, red, 0);
     drawText(renderer, font, "R: Reset Array", menuX, 260, yellow, 0);
 }
 

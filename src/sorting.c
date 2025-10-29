@@ -46,7 +46,7 @@ void bubble_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
                 
                 // Redraw immediately to show result of the swap
                 renderApp(renderer, font, tab, size, j, j + 1, 1);
-                SDL_Delay(10); // Slightly longer delay on swap
+                SDL_Delay(5); // Slightly longer delay on swap
             }
         }
 
@@ -88,7 +88,7 @@ void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
         actionCode = handleEvents(&running);
         if (!running || actionCode ==50) return;
         renderApp(renderer, font, tab, size, i, minimum, 1);
-        SDL_Delay(150);
+        SDL_Delay(20);
 
         // Swap if needed
         if (minimum != i) {
@@ -100,7 +100,7 @@ void selection_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
             actionCode = handleEvents(&running);
             if (!running || actionCode == 50) return;
             renderApp(renderer, font, tab, size, i, minimum, 1);
-            SDL_Delay(150);
+            SDL_Delay(20);
         }   
     }
 }
@@ -130,7 +130,7 @@ void insertion_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
         actionCode = handleEvents(&running);
         if (!running || actionCode ==50) return;
         renderApp(renderer, font, tab, size, j, i, 1);
-        SDL_Delay(150);
+        SDL_Delay(20);
 
         // Shift larger elements to the right
         while (j >= 0 && tab[j] > key) {
@@ -141,7 +141,7 @@ void insertion_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) 
             actionCode = handleEvents(&running);
             if (!running || actionCode == 50) return;
             renderApp(renderer, font, tab, size, j, i, 1);
-            SDL_Delay(150);
+            SDL_Delay(20);
         }
 
         // Insert the key into its correct position
