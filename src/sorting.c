@@ -190,51 +190,101 @@ void insertion_sort(App_Window* app) {
     }
 }
 
-int partition(int *tab, int low, int high, SDL_Renderer* renderer, TTF_Font* font) {
 
-    int running = 1; // Local flag to check if the user closes the window
-    int actionCode = 0; // Need to stop the sort
 
-    int pivot=high;
-    int j=low;
+ // This function handles moving elements and updating the display.
+ // It returns the new pivot index, or -1 if the user stops the sort.
+static int partition(App_Window* app, int low, int high) {
+    
+    int* tab = app->array; // Get the array from 'app'
+    int running = 1;      // (Local flag for handleEvents)
+    int actionCode = 0;   // (Local var for handleEvents)
 
-    for (int i = low; i < high; i++) {
-        if(tab[i]<tab[pivot]) {
+    // Choose the last element as the pivot
+    app->stats->memoryAccesses++; // 1 read (pivot)
+    int pivot_value = tab[high]; 
+    
+    int i = (low - 1); // Index of the smaller element
+
+    for (int j = low; j < high; j++) {
+        // Handle events (for 'E' or 'X')
+        actionCode = handleEvents(&running);
+        if (!running) { app->running = 0; return -1; } // Stop everything
+        if (actionCode == 50) return -1; // Stop the sort
+
+        // --- Stats ---
+        app->stats->comparisons++;    // 1 comparison
+        app->stats->memoryAccesses++; // 1 read (tab[j])
+
+        if (tab[j] < pivot_value) {
+            i++; 
+            
+            // --- Stats (4 accesses: 2 reads, 2 writes) ---
+            app->stats->memoryAccesses += 4;
             int temp = tab[i];
             tab[i] = tab[j];
             tab[j] = temp;
-            j++;
-            // --- VISUALIZATION: Show current key and comparison position ---
-        actionCode = handleEvents(&running);
-        if (!running || actionCode ==50) return j;
-        renderApp(renderer, font, tab, high, i, j, 1);
-        SDL_Delay(20);
         }
-        // --- VISUALIZATION: Show current key and comparison position ---
-        actionCode = handleEvents(&running);
-        if (!running || actionCode ==50) return j;
-        renderApp(renderer, font, tab, high, i, pivot, 1);
-        SDL_Delay(20);
-    }
-    int temp = tab[j];
-    tab[j] = tab[pivot];
-    tab[pivot] = temp;
 
-    return j;
+        // --- Visualization ---
+        // Highlight 'j' (scanning) and 'high' (the pivot)
+        renderApp(app, j, high);
+        SDL_Delay(5);
+    }
+
+    // Place the pivot in its final position
+    // --- Stats (4 accesses: 2 reads, 2 writes) ---
+    app->stats->memoryAccesses += 4;
+    int temp = tab[i + 1];
+    tab[i + 1] = tab[high]; // tab[high] is the pivot
+    tab[high] = temp;
+    
+    // Handle events one last time
+    actionCode = handleEvents(&running);
+    if (!running) { app->running = 0; return -1; }
+    if (actionCode == 50) return -1;
+    
+    // Show the final swap
+    renderApp(app, i + 1, high);
+    SDL_Delay(5);
+
+    return (i + 1); // Return the pivot's index
 }
 
-void quick_sort(int *tab, int size, SDL_Renderer* renderer, TTF_Font* font) {
+
+//"Private" recursive function for Quick Sort.
+// This manages the divide-and-conquer logic.
+ 
+static void quick_sort_recursive(App_Window* app, int low, int high) {
     
-    //int running = 1; // Local flag to check if the user closes the window
-    //int actionCode = 0; // Need to stop the sort
+    // Base case for the recursion
+    // Also check if the user has quit
+    if (low < high && app->running) {
+        
+        // 1. Find the pivot
+        int pivot_index = partition(app, low, high);
+        
+        // If partition returned -1 (user stop), abort
+        if (pivot_index == -1) return;
 
-    if (size < 2) return;
+        // 2. Sort the left side (before the pivot)
+        quick_sort_recursive(app, low, pivot_index - 1);
+        
+        // 3. Sort the right side (after the pivot)
+        quick_sort_recursive(app, pivot_index + 1, high);
+    }
+}
 
-    int pivot = partition(tab, 0, size - 1, renderer, font);
+// @brief "Public" function for Quick Sort.
+// This is the one called by runMainLoop (e.g., via key '4').
+void quick_sort(App_Window* app) {
+    int size = N; // N is global via main.h
 
-    
-    
-    quick_sort(tab, pivot, renderer, font);
-    quick_sort(tab + pivot + 1, size - pivot - 1, renderer, font);
+    // 1. Start the recursive sort on the entire array (0 to size - 1)
+    quick_sort_recursive(app, 0, size - 1);
 
-}  
+    // 2. Final render (only if the sort wasn't stopped)
+    if (app->running) {
+        renderApp(app, -1, -1); // No highlights
+    }
+}

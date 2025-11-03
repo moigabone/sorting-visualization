@@ -168,7 +168,7 @@ void drawStats(SDL_Renderer* renderer, TTF_Font* font, Stats_t* stats) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     SDL_Color white = {255, 255, 255, 255};
-    
+
     char timeText[100];
     char compText[100];
     char accessText[100];
