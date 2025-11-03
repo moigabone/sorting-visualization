@@ -15,5 +15,5 @@ void selection_sort(App_Window* app);
 void insertion_sort(App_Window* app); 
 
 //implemented in sorting.c
-void quick_sort(int* array, int size, SDL_Renderer* renderer,TTF_Font* font);
+void quick_sort(App_Window* app);
 #endif 

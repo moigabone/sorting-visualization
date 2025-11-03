@@ -48,7 +48,7 @@ void runMainLoop(App_Window* app) {
                     insertion_sort(app);
                     break;
                 case 4:
-                    quick_sort(app->array, N, app->renderer, app->font);
+                    quick_sort(app);
                     break;
                 default:
                     printf("No algorithm selected!\n");
