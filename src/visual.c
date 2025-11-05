@@ -1,10 +1,10 @@
-// src/visual.c
 #include "visual.h"
 #include "main.h"   // For global constants (N, WINDOW_WIDTH, etc.)
 #include "utils.h"  // For createRandomArray (part of init)
 #include "stats.h"
 #include <stdio.h>  // For error messages
 #include <stdlib.h> // For malloc/free
+#include <SDL2/SDL.h>
 
 App_Window* initAppVisuals() {
     // 1. Allocate memory for the App struct itself
@@ -158,23 +158,39 @@ void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm) {
 // Draw the top left performance menu
 void drawStats(SDL_Renderer* renderer, TTF_Font* font, Stats_t* stats) {
     
+    // Define stats box position
     SDL_Rect statsBg = { 10, 10, 250, 85 };
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // clear background
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180); // Black
+    
+    // 2. Draw semi-transparent background
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // Enable transparency
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180); // Black, 180 alpha
     SDL_RenderFillRect(renderer, &statsBg);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE); // Disable transparency
+    
+    // Set text color
     SDL_Color white = {255, 255, 255, 255};
 
+    //  Buffers to hold the formatted text
     char timeText[100];
     char compText[100];
     char accessText[100];
+    
+    //start time accumulated
+    double displayTime = stats->executionTime;
+    
+    if (stats->startTicks != 0) {
+        // Sort is RUNNING. Calculate elapsed time on the fly.
+        Uint64 now = SDL_GetPerformanceCounter();
+        Uint64 frequency = SDL_GetPerformanceFrequency();
+        displayTime += (double)(now - stats->startTicks) / frequency;
+    } 
 
-    // read values from the 'stats' pointer 
-    sprintf(timeText,   "Execution time : %.5f s", stats->executionTime);
+    // Format the strings with the values
+    sprintf(timeText,   "Execution time : %.5f s", displayTime);
     sprintf(compText,   "Comparisons : %lld", stats->comparisons);
     sprintf(accessText, "Memory accesses : %lld", stats->memoryAccesses);
 
+    // Draw the text
     drawText(renderer, font, timeText,   20, 20, white, 0);
     drawText(renderer, font, compText,   20, 45, white, 0);
     drawText(renderer, font, accessText, 20, 70, white, 0);

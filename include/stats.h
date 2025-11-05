@@ -1,14 +1,16 @@
 #ifndef STATS_H
 #define STATS_H
 
+#include <SDL2/SDL_stdinc.h> // for Uint64
+
 //struct for the timer
 typedef struct {
     double executionTime;
     long long comparisons;
     long long memoryAccesses;
+    Uint64 startTicks;
 } Stats_t;
 
-// --- Fonctions (Implémentées dans stats.c) ---
 
 // Implemented in stats.c)
 //return a pointer to the struct Stats_t.
