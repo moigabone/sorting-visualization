@@ -14,10 +14,10 @@ void runMainLoop(App_Window* app) {
     
     while (app->running) {
         
-        // 1) EVENT HANDLING
+        // 1. EVENT HANDLING
         actionCode = handleEvents(&app->running);
         
-        // 2) LOGIC
+        // 2. LOGIC
         if (actionCode > 0 && actionCode < 10) {
             app->selectedAlgorithm = actionCode;
         }
@@ -28,14 +28,13 @@ void runMainLoop(App_Window* app) {
             if (app->array == NULL) {
                 fprintf(stderr, "Failed to reset array.\n");
                 app->running = 0; // Exit on error
-            resetStats(app->stats);
             }
+            resetStats(app->stats);
         }
 
         else if (actionCode == 100) { // 'S' = Start
-            // Reset stats and start timer
-            resetStats(app->stats); 
-            Uint64 startTicks = SDL_GetPerformanceCounter();
+            // start timer
+            app->stats->startTicks = SDL_GetPerformanceCounter();
             
             switch (app->selectedAlgorithm) {
                 case 1:
@@ -52,18 +51,23 @@ void runMainLoop(App_Window* app) {
                     break;
                 default:
                     printf("No algorithm selected!\n");
+                    app->stats->startTicks = 0;
                     break;
             }
-            //The the timer and save the time
-            Uint64 endTicks = SDL_GetPerformanceCounter();
-            Uint64 frequency = SDL_GetPerformanceFrequency();
-            
-            // save the time into the stats struct
-            app->stats->executionTime = (double)(endTicks - startTicks) / frequency;
+            //Stop the timer and save the time
+            if (app->stats->startTicks != 0) { 
+                Uint64 endTicks = SDL_GetPerformanceCounter();
+                Uint64 frequency = SDL_GetPerformanceFrequency();
+                    
+                app->stats->executionTime += (double)(endTicks - app->stats->startTicks) / frequency;
+
+                app->stats->startTicks = 0; 
+            }
         }
 
-        // 3) DRAWING
+        // 3. DRAWING
         renderApp(app, -1, -1);
+
         SDL_Delay(16);
     }
 }
@@ -135,13 +139,14 @@ int* createRandomArray(int size, int maxValue) {
         return NULL; // Return NULL (error) if malloc failed
     }
 
-    // loop to fill the array
+    //loop to fill the array
     for (int i = 0; i < size; i++) {
+       
         //new 'random', lead to have a perfect line after the sort and not an irregular line
         array[i] = (int)(((double)i / (size - 1)) * (maxValue - 1)) + 1;
         //array[i] = (rand() % maxValue) + 1;  // We add +1 to avoid 0-height bars (values from 1 to maxValue) // OLD RANDOM
     }
-
+    // Shuffle
     // Start from last and shuffle
     for (int i = size - 1; i > 0; i--) {
         int j = rand() % (i + 1); 

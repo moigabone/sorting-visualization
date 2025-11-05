@@ -25,7 +25,14 @@ void bubble_sort(App_Window* app) {
             // keep UI responsive; allow early stop
             actionCode = handleEvents(&running); // keep window responsive
             if (!running) { app->running = 0; return; } //stop everything
-            if (actionCode == 50) return; // stop sorting if user closes the window
+            if (actionCode == 50) { 
+                Uint64 now = SDL_GetPerformanceCounter();
+                Uint64 frequency = SDL_GetPerformanceFrequency();
+
+                app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+                app->stats->startTicks = 0; 
+                return;
+            }
 
             // stats: compare tab[j] vs tab[j+1]
             app->stats->comparisons++; 
@@ -33,7 +40,7 @@ void bubble_sort(App_Window* app) {
 
             // visual: highlight j (red) and j+1 (green)
             renderApp(app, j, j + 1);
-            SDL_Delay(5); // short delay to make animation visible
+            SDL_Delay(1); // short delay to make animation visible
 
             // swap if out of order
             if (tab[j] > tab[j + 1]) {
@@ -46,10 +53,17 @@ void bubble_sort(App_Window* app) {
 
                 // visual : show swap result
                 if (!running) { app->running = 0; return; }
-                if (actionCode == 50) return;
+                if (actionCode == 50) { 
+                    Uint64 now = SDL_GetPerformanceCounter();
+                    Uint64 frequency = SDL_GetPerformanceFrequency();
+
+                    app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+                    app->stats->startTicks = 0; 
+                    return;
+                }
                 
                 renderApp(app, j, j + 1);
-                SDL_Delay(5);
+                SDL_Delay(1);
             }
         }
 
@@ -90,7 +104,14 @@ void selection_sort(App_Window* app) {
         // visual: show current i and candidate minimum
         actionCode = handleEvents(&running);
         if (!running) { app->running = 0; return; }
-        if (actionCode == 50) return;
+        if (actionCode == 50) { 
+            Uint64 now = SDL_GetPerformanceCounter();
+            Uint64 frequency = SDL_GetPerformanceFrequency();
+
+            app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+            app->stats->startTicks = 0; 
+            return;
+            }
         renderApp(app, i, minimum);
         SDL_Delay(20);
 
@@ -105,7 +126,14 @@ void selection_sort(App_Window* app) {
             // visual: show after-swap state
             actionCode = handleEvents(&running);
             if (!running) { app->running = 0; return; }
-            if (actionCode == 50) return;
+            if (actionCode == 50) { 
+                Uint64 now = SDL_GetPerformanceCounter();
+                Uint64 frequency = SDL_GetPerformanceFrequency();
+
+                app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+                app->stats->startTicks = 0; 
+                return;
+            }
             renderApp(app, i, minimum);
             SDL_Delay(20);
         }   
@@ -135,9 +163,16 @@ void insertion_sort(App_Window* app) {
         // visual: show (j, i) before shifting
         actionCode = handleEvents(&running);
         if (!running) { app->running = 0; return; }
-        if (actionCode == 50) return;
+        if (actionCode == 50) { 
+            Uint64 now = SDL_GetPerformanceCounter();
+            Uint64 frequency = SDL_GetPerformanceFrequency();
+
+            app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+            app->stats->startTicks = 0; 
+            return;
+        }
         renderApp(app, j, i);
-        SDL_Delay(20);
+        SDL_Delay(5);
 
         // first comparison counted here:
         app->stats->comparisons++;
@@ -152,9 +187,16 @@ void insertion_sort(App_Window* app) {
             // visual: show shifting progress (j moves left)
             actionCode = handleEvents(&running);
             if (!running) { app->running = 0; return; }
-            if (actionCode == 50) return;
+            if (actionCode == 50) { 
+                Uint64 now = SDL_GetPerformanceCounter();
+                Uint64 frequency = SDL_GetPerformanceFrequency();
+
+                app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+                app->stats->startTicks = 0; 
+                return;
+            }
             renderApp(app, j, i);
-            SDL_Delay(20);
+            SDL_Delay(5);
 
             // (optional accuracy) count next comparison for next loop test:
             // app->stats->comparisons += 1; app->stats->memoryAccesses += 1;
@@ -192,7 +234,14 @@ static int partition(App_Window* app, int low, int high) {
     for (int j = low; j < high; j++) {
         actionCode = handleEvents(&running);
         if (!running) { app->running = 0; return -1; }
-        if (actionCode == 50) return -1;
+        if (actionCode == 50) { 
+            Uint64 now = SDL_GetPerformanceCounter();
+            Uint64 frequency = SDL_GetPerformanceFrequency();
+
+            app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+            app->stats->startTicks = 0; 
+            return -1;
+        }
 
         app->stats->comparisons++;
         app->stats->memoryAccesses++; // read tab[j]
@@ -219,7 +268,14 @@ static int partition(App_Window* app, int low, int high) {
     // One last visual update on the final swap
     actionCode = handleEvents(&running);
     if (!running) { app->running = 0; return -1; }
-    if (actionCode == 50) return -1;
+    if (actionCode == 50) { 
+        Uint64 now = SDL_GetPerformanceCounter();
+        Uint64 frequency = SDL_GetPerformanceFrequency();
+
+        app->stats->executionTime += (double)(now - app->stats->startTicks) / frequency;
+        app->stats->startTicks = 0; 
+        return -1;
+    }
     
     renderApp(app, i + 1, high);
     SDL_Delay(5);
@@ -229,7 +285,7 @@ static int partition(App_Window* app, int low, int high) {
 
 // Recursive helper: sorts range [low..high] if app->running is true.
 static void quick_sort_recursive(App_Window* app, int low, int high) {
-    if (low < high && app->running) {
+    if (low < high && app->running) {   
         // 1) find the pivot
         int pivot_index = partition(app, low, high);
         if (pivot_index == -1) return;
