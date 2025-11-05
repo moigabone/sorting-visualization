@@ -1,11 +1,9 @@
 #ifndef VISUAL_H
 #define VISUAL_H
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "main.h"
 #include "stats.h"
-
 
 //Initializes all SDL/TTF systems and creates the app struct.
 // return a pointer to the newly created App_window, or NULL on failure.
@@ -22,7 +20,6 @@ void drawArray(SDL_Renderer* renderer, int* array, int size, int highlight1, int
 
 //implemented in visual.c
 void drawStats(SDL_Renderer* renderer, TTF_Font* font, Stats_t* stats);
-
 
 // (Clears screen, draws elements, and presents):
 // renderer :The SDL renderer to draw on.

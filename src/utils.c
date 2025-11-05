@@ -14,10 +14,10 @@ void runMainLoop(App_Window* app) {
     
     while (app->running) {
         
-        // 1. EVENT HANDLING
+        // 1) EVENT HANDLING
         actionCode = handleEvents(&app->running);
         
-        // 2. LOGIC
+        // 2) LOGIC
         if (actionCode > 0 && actionCode < 10) {
             app->selectedAlgorithm = actionCode;
         }
@@ -62,9 +62,8 @@ void runMainLoop(App_Window* app) {
             app->stats->executionTime = (double)(endTicks - startTicks) / frequency;
         }
 
-        // 3. DRAWING
+        // 3) DRAWING
         renderApp(app, -1, -1);
-
         SDL_Delay(16);
     }
 }
@@ -136,14 +135,13 @@ int* createRandomArray(int size, int maxValue) {
         return NULL; // Return NULL (error) if malloc failed
     }
 
-    //loop to fill the array
+    // loop to fill the array
     for (int i = 0; i < size; i++) {
-       
         //new 'random', lead to have a perfect line after the sort and not an irregular line
         array[i] = (int)(((double)i / (size - 1)) * (maxValue - 1)) + 1;
         //array[i] = (rand() % maxValue) + 1;  // We add +1 to avoid 0-height bars (values from 1 to maxValue) // OLD RANDOM
     }
-    // Shuffle
+
     // Start from last and shuffle
     for (int i = size - 1; i > 0; i--) {
         int j = rand() % (i + 1); 
