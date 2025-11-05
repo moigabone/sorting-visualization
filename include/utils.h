@@ -1,6 +1,5 @@
 #ifndef UTILS_H
 #define UTILS_H
-
 #include "main.h"
 
 //Runs the main application loop.
@@ -9,7 +8,6 @@
 //implemented in utils.c
 void runMainLoop(App_Window* app);
 
-
 //SDL Events
 //implemented in utils.c
 int handleEvents(int* running);
@@ -17,6 +15,5 @@ int handleEvents(int* running);
 //random number
 //implemented in utils.c   
 int* createRandomArray(int size, int maxValue);
-
 
 #endif

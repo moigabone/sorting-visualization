@@ -6,87 +6,71 @@
 
 /*
 ----------------------------------------------------
- BUBBLE SORT VISUALIZATION
+ BUBBLE SORT
 ----------------------------------------------------
- Step-by-step Bubble Sort implementation.
- After each comparison or swap:
-  - The screen is updated (bars redrawn)
-  - Compared elements are highlighted
-  - Small delay added for smooth animation
+ Repeatedly compares adjacent elements and swaps them if they’re in the wrong order.
+ After each pass, the largest element “bubbles up” to the end of the array.
 ----------------------------------------------------
 */
 void bubble_sort(App_Window* app) {
-    
-    int running = 1; // Local flag to check if the user closes the window
-    int actionCode = 0; // Need to stop the sort
-
-    int size= N; //from main.h
-    int* tab = app->array; //access to the array from the struct 
+    int running = 1; // local flag to check if the user closes the window
+    int actionCode = 0; // need to stop the sort
+    int size= N; // array size from main.h
+    int* tab = app->array;
 
     for (int i = 0; i < size - 1; i++) {
-        int swapped = 0; // Track if any swaps happened during this pass
+        int swapped = 0; // early-exit optimization
 
         for (int j = 0; j < size - 1 - i; j++) {
-            // --- VISUALIZATION: Comparison ---
-            actionCode = handleEvents(&running); // Keep window responsive
+            // keep UI responsive; allow early stop
+            actionCode = handleEvents(&running); // keep window responsive
             if (!running) { app->running = 0; return; } //stop everything
-            if (actionCode == 50) return;   // Stop sorting if user closes the window
+            if (actionCode == 50) return; // stop sorting if user closes the window
 
-             //Stats
+            // stats: compare tab[j] vs tab[j+1]
             app->stats->comparisons++; 
             app->stats->memoryAccesses += 2;
 
-            
-            // Redraw the array, highlighting compared elements
-            // j = red, j+1 = green
+            // visual: highlight j (red) and j+1 (green)
             renderApp(app, j, j + 1);
-            SDL_Delay(5); // Short delay to make animation visible
+            SDL_Delay(5); // short delay to make animation visible
 
-            // Swap if needed ---
+            // swap if out of order
             if (tab[j] > tab[j + 1]) {
-
-                //stats
-                app->stats->memoryAccesses += 3;
+                app->stats->memoryAccesses += 3; // tmp read+write + one extra read/write pair approximated
 
                 int tmp = tab[j];
                 tab[j] = tab[j + 1];
                 tab[j + 1] = tmp;
                 swapped = 1;
 
-                // --- VISUALIZATION: Swap ---
+                // visual : show swap result
                 if (!running) { app->running = 0; return; }
                 if (actionCode == 50) return;
                 
-                // Redraw immediately to show result of the swap
                 renderApp(app, j, j + 1);
-                SDL_Delay(5); // Slightly longer delay on swap
+                SDL_Delay(5);
             }
         }
 
-        // Optimization: stop if array is already sorted
-        if (!swapped) break;
+        if (!swapped) break; // already sorted
     }
 
-    // --- FINAL VISUALIZATION: Draw sorted array ---
-    renderApp(app, -1, -1); // no highlight
+    // Final clean frame (no highlights)
+    renderApp(app, -1, -1);
 }
-
 
 /*
 ----------------------------------------------------
  SELECTION SORT VISUALIZATION
 ----------------------------------------------------
- For each position i:
-  - Find the smallest element in the rest of the array
-  - Swap it with element at position i
- Visual updates happen after comparisons and swaps.
+Scans the array to find the smallest element and places it at the beginning.
+Repeats the process for the remaining unsorted part.
 ----------------------------------------------------
 */
 void selection_sort(App_Window* app) {
-
-    int running = 1; // Local flag to check if the user closes the window
-    int actionCode = 0; // Need to stop the sort
-
+    int running = 1;
+    int actionCode = 0;
     int size = N;
     int* tab = app->array;
 
@@ -95,33 +79,30 @@ void selection_sort(App_Window* app) {
 
         // Find smallest element in the remaining array
         for (int j = i + 1; j < size; j++) {
-            //stats
             app->stats->comparisons++;
             app->stats->memoryAccesses += 2; // read tab[j] and tab[minimum]
-
 
             if (tab[j] < tab[minimum]) {
                 minimum = j;    
             }
         }
 
-        // --- VISUALIZATION: Highlight current position and minimum ---
+        // visual: show current i and candidate minimum
         actionCode = handleEvents(&running);
         if (!running) { app->running = 0; return; }
         if (actionCode == 50) return;
         renderApp(app, i, minimum);
         SDL_Delay(20);
 
-        // Swap if needed
+        // place the minimum at position i
         if (minimum != i) {
-            //stats
-            app->stats->memoryAccesses += 4; // 4 access : 2 read, 2 write) ---
+            app->stats->memoryAccesses += 4; // 2 reads + 2 writes for swap
 
             int tmp = tab[i];
             tab[i] = tab[minimum];
             tab[minimum] = tmp;
 
-            // --- VISUALIZATION: After swap ---
+            // visual: show after-swap state
             actionCode = handleEvents(&running);
             if (!running) { app->running = 0; return; }
             if (actionCode == 50) return;
@@ -131,160 +112,145 @@ void selection_sort(App_Window* app) {
     }
 }
 
-
 /*
 ----------------------------------------------------
  INSERTION SORT VISUALIZATION
 ----------------------------------------------------
- Builds a sorted part of the array from left to right:
-  - Takes the next element (key)
-  - Moves larger elements one step to the right
-  - Inserts key into its correct position
- Visual updates show the shifting process in real time.
+Builds the sorted part of the array one element at a time.
+Each new element is inserted into its correct position within the sorted portion.
 ----------------------------------------------------
 */
 void insertion_sort(App_Window* app) {
 
-    int running = 1; // Local flag to check if the user closes the window
-    int actionCode = 0; // Need to stop the sort
-
+    int running = 1;
+    int actionCode = 0;
     int size = N;
     int* tab = app->array;
 
     for (int i = 1; i < size; i++) {
-        // Stats (1 read)
-        app->stats->memoryAccesses++;
-        int key = tab[i]; // Element to insert
+        app->stats->memoryAccesses++; // read key
+        int key = tab[i];
         int j = i - 1;
 
-        // --- VISUALIZATION: Show current key and comparison position ---
+        // visual: show (j, i) before shifting
         actionCode = handleEvents(&running);
         if (!running) { app->running = 0; return; }
         if (actionCode == 50) return;
         renderApp(app, j, i);
         SDL_Delay(20);
 
-        //Stats (1 comparison, 1 read)
+        // first comparison counted here:
         app->stats->comparisons++;
         app->stats->memoryAccesses++;
-        // Shift larger elements to the right
+
+        // shift larger elements to the right
         while (j >= 0 && tab[j] > key) {
-            //Stats (1 write, 1 read)
-            app->stats->memoryAccesses += 2; // tab[j] already read
+            app->stats->memoryAccesses += 2; // write tab[j+1], read tab[j] already accounted loosely
             tab[j + 1] = tab[j];
             j--;
 
-            // --- VISUALIZATION: Show shifting in progress ---
+            // visual: show shifting progress (j moves left)
             actionCode = handleEvents(&running);
             if (!running) { app->running = 0; return; }
             if (actionCode == 50) return;
             renderApp(app, j, i);
             SDL_Delay(20);
+
+            // (optional accuracy) count next comparison for next loop test:
+            // app->stats->comparisons += 1; app->stats->memoryAccesses += 1;
         }
 
-        
-        //Stats (1 write) 
-        app->stats->memoryAccesses++;
-        // Insert the key into its correct position
+        // insert the key at its position
+        app->stats->memoryAccesses++; // write key
         tab[j + 1] = key;
     }
 }
 
+/*
+----------------------------------------------------
+ INSERTION SORT VISUALIZATION
+----------------------------------------------------
+Chooses a pivot, then partitions the array into two parts:
+    -Elements smaller than the pivot
+    -Elements greater than the pivot
+Recursively sorts both sides.
+----------------------------------------------------
+*/
 
-
- // This function handles moving elements and updating the display.
- // It returns the new pivot index, or -1 if the user stops the sort.
+// Partition around pivot = tab[high]. Returns pivot's final index.
+// Returns -1 if the user stops/quit to abort the sort gracefully.
 static int partition(App_Window* app, int low, int high) {
-    
-    int* tab = app->array; // Get the array from 'app'
-    int running = 1;      // (Local flag for handleEvents)
-    int actionCode = 0;   // (Local var for handleEvents)
+    int* tab = app->array;
+    int running = 1;
+    int actionCode = 0;
 
-    // Choose the last element as the pivot
-    app->stats->memoryAccesses++; // 1 read (pivot)
+    app->stats->memoryAccesses++; // read pivot
     int pivot_value = tab[high]; 
     
-    int i = (low - 1); // Index of the smaller element
+    int i = (low - 1); // boundary of "elements < pivot"
 
     for (int j = low; j < high; j++) {
-        // Handle events (for 'E' or 'X')
         actionCode = handleEvents(&running);
-        if (!running) { app->running = 0; return -1; } // Stop everything
-        if (actionCode == 50) return -1; // Stop the sort
+        if (!running) { app->running = 0; return -1; }
+        if (actionCode == 50) return -1;
 
-        // --- Stats ---
-        app->stats->comparisons++;    // 1 comparison
-        app->stats->memoryAccesses++; // 1 read (tab[j])
+        app->stats->comparisons++;
+        app->stats->memoryAccesses++; // read tab[j]
 
         if (tab[j] < pivot_value) {
             i++; 
-            
-            // --- Stats (4 accesses: 2 reads, 2 writes) ---
-            app->stats->memoryAccesses += 4;
+            // swap tab[i] and tab[j]
+            app->stats->memoryAccesses += 4; // 2 reads + 2 writes
             int temp = tab[i];
             tab[i] = tab[j];
             tab[j] = temp;
         }
 
-        // --- Visualization ---
-        // Highlight 'j' (scanning) and 'high' (the pivot)
         renderApp(app, j, high);
         SDL_Delay(5);
     }
 
-    // Place the pivot in its final position
-    // --- Stats (4 accesses: 2 reads, 2 writes) ---
-    app->stats->memoryAccesses += 4;
+    // place pivot at i+1 (its final position)
+    app->stats->memoryAccesses += 4; // swap pivot into place
     int temp = tab[i + 1];
-    tab[i + 1] = tab[high]; // tab[high] is the pivot
+    tab[i + 1] = tab[high];
     tab[high] = temp;
     
-    // Handle events one last time
+    // One last visual update on the final swap
     actionCode = handleEvents(&running);
     if (!running) { app->running = 0; return -1; }
     if (actionCode == 50) return -1;
     
-    // Show the final swap
     renderApp(app, i + 1, high);
     SDL_Delay(5);
 
-    return (i + 1); // Return the pivot's index
+    return (i + 1);
 }
 
-
-//"Private" recursive function for Quick Sort.
-// This manages the divide-and-conquer logic.
- 
+// Recursive helper: sorts range [low..high] if app->running is true.
 static void quick_sort_recursive(App_Window* app, int low, int high) {
-    
-    // Base case for the recursion
-    // Also check if the user has quit
     if (low < high && app->running) {
-        
-        // 1. Find the pivot
+        // 1) find the pivot
         int pivot_index = partition(app, low, high);
-        
-        // If partition returned -1 (user stop), abort
         if (pivot_index == -1) return;
 
-        // 2. Sort the left side (before the pivot)
+        // 2) sort the left side (before the pivot)
         quick_sort_recursive(app, low, pivot_index - 1);
         
-        // 3. Sort the right side (after the pivot)
+        // 3) sort the right side (after the pivot)
         quick_sort_recursive(app, pivot_index + 1, high);
     }
 }
 
-// @brief "Public" function for Quick Sort.
-// This is the one called by runMainLoop (e.g., via key '4').
+// public entry point for Quick Sort (called from main loop)
 void quick_sort(App_Window* app) {
-    int size = N; // N is global via main.h
+    int size = N; // global length from main.h
 
-    // 1. Start the recursive sort on the entire array (0 to size - 1)
+    // 1) start the recursive sort on the entire array (0 to size - 1)
     quick_sort_recursive(app, 0, size - 1);
 
-    // 2. Final render (only if the sort wasn't stopped)
+    // 2) final render (only if the sort wasn't stopped)
     if (app->running) {
-        renderApp(app, -1, -1); // No highlights
+        renderApp(app, -1, -1);
     }
 }
