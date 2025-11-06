@@ -6,35 +6,36 @@
 #include <stdlib.h> // For malloc/free
 #include <SDL2/SDL.h>
 
+//init all SDL/TTF systems and creates the app struct
 App_Window* initAppVisuals() {
-    // 1. Allocate memory for the App struct itself
+    // Allocate memory for the App struct itself
     App_Window* app = (App_Window*)malloc(sizeof(App_Window));
     if (app == NULL) {
         fprintf(stderr, "Failed to allocate memory for App struct.\n");
         return NULL;
     }
-    // 1) Set pointers to NULL initially for safe cleanup
+    // Set pointers to NULL initially for safe cleanup
     app->window = NULL;
     app->renderer = NULL;
     app->font = NULL;
     app->array = NULL;
 
 
-    // 2) Initialize SDL
+    // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
         cleanupAppVisuals(app); // Call cleanup (handles partial init)
         return NULL;
     }
 
-    // 3) Initialize TTF
+    // Initialize TTF
     if (TTF_Init() == -1) {
         fprintf(stderr, "TTF initialization failed: %s\n", TTF_GetError());
         cleanupAppVisuals(app);
         return NULL;
     }
 
-    // 4) Create Window
+    // Create Window
     app->window = SDL_CreateWindow(
         "Project C - Sorting Visualization",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -46,7 +47,7 @@ App_Window* initAppVisuals() {
         return NULL;
     }
 
-    // 5) Create Renderer
+    // Create Renderer
     app->renderer = SDL_CreateRenderer(app->window, -1, SDL_RENDERER_ACCELERATED);
     if (app->renderer == NULL) {
         fprintf(stderr, "Renderer creation failed: %s\n", SDL_GetError());
@@ -54,7 +55,7 @@ App_Window* initAppVisuals() {
         return NULL;
     }
 
-    // 6) Load Font 
+    // Load Font 
     app->font = TTF_OpenFont("font.otf", 22);
     if (app->font == NULL) {
         fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
@@ -62,7 +63,7 @@ App_Window* initAppVisuals() {
         return NULL;
     }
 
-    // 7) Create Array (Data is initialized along with visuals here)
+    // Create Array (Data is initialized along with visuals here)
     app->array = createRandomArray(N, WINDOW_HEIGHT); // 50px margin
     if (app->array == NULL) {
         fprintf(stderr, "Failed to create array (malloc failed).\n");

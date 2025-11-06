@@ -15,19 +15,19 @@ App_Window* initAppVisuals(); // Renamed to be specific to 'visual'
 //implemented in visual.c
 void cleanupAppVisuals(App_Window* app);
 
+//Render sorting bars
 //implemented in visual.c
 void drawArray(SDL_Renderer* renderer, int* array, int size, int highlight1, int highlight2);
 
+//Render top-left stats box
 //implemented in visual.c
 void drawStats(SDL_Renderer* renderer, TTF_Font* font, Stats_t* stats);
 
-// (Clears screen, draws elements, and presents):
-// renderer :The SDL renderer to draw on.
-// array :The array of integers to visualize.
-// size :The size of the array.
+//Render entire screen (bars, legend, stats)
 //implemented in visual.c
 void renderApp(App_Window* app, int highlight1, int hightlight2);
 
+//Render right-hand menu
 //implemented in visual.c
 void drawLegend(SDL_Renderer* renderer, TTF_Font* font, int selectedAlgorithm);
 

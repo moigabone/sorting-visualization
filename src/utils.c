@@ -8,18 +8,20 @@
 #include <SDL2/SDL.h>
 
 void runMainLoop(App_Window* app) {
-    int actionCode = 0;
+    int actionCode = 0; //stores the user's keyboard input
 
     printf("Press 1, 2, or 3. Then 'S' to Start. 'R' to Reset. 'E' to Stop. '\n");
     
     while (app->running) {
         
-        // 1. EVENT HANDLING
+        // EVENT HANDLING
+        //check for user input
         actionCode = handleEvents(&app->running);
         
-        // 2. LOGIC
+        // LOGIC
+        // user pressed
         if (actionCode > 0 && actionCode < 10) {
-            app->selectedAlgorithm = actionCode;
+            app->selectedAlgorithm = actionCode; // store the choice
         }
         else if (actionCode == 99) { // 'R' = Reset
             free(app->array);
@@ -29,7 +31,7 @@ void runMainLoop(App_Window* app) {
                 fprintf(stderr, "Failed to reset array.\n");
                 app->running = 0; // Exit on error
             }
-            resetStats(app->stats);
+            resetStats(app->stats); //reset stats to 0
         }
 
         else if (actionCode == 100) { // 'S' = Start
@@ -58,20 +60,22 @@ void runMainLoop(App_Window* app) {
             if (app->stats->startTicks != 0) { 
                 Uint64 endTicks = SDL_GetPerformanceCounter();
                 Uint64 frequency = SDL_GetPerformanceFrequency();
-                    
+                
+                //add the elapsed time to the total
                 app->stats->executionTime += (double)(endTicks - app->stats->startTicks) / frequency;
 
-                app->stats->startTicks = 0; 
+                app->stats->startTicks = 0;  //disarm the timer
             }
         }
 
-        // 3. DRAWING
+        // DRAWING
         renderApp(app, -1, -1);
 
         SDL_Delay(16);
     }
 }
 
+//processes all pending SDL events
 int handleEvents(int* running) {
     SDL_Event event;
     
@@ -129,7 +133,7 @@ int handleEvents(int* running) {
     return 0; // no action
 }
 
-
+//creates a random shuffled array of numbers
 int* createRandomArray(int size, int maxValue) {
     
     int* array = (int*)malloc(size * sizeof(int));

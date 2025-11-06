@@ -1,6 +1,6 @@
 #include "sorting.h"
-#include "visual.h" // for renderApp (drawing the array)
-#include "utils.h"  // for handleEvents (to prevent window freeze)
+#include "visual.h" 
+#include "utils.h" 
 #include "stats.h"
 #include <SDL2/SDL_ttf.h>
 
@@ -24,7 +24,7 @@ void bubble_sort(App_Window* app) {
         for (int j = 0; j < size - 1 - i; j++) {
             // keep UI responsive; allow early stop
             actionCode = handleEvents(&running); // keep window responsive
-            if (!running) { app->running = 0; return; } //stop everything
+            if (!running) { app->running = 0; return; } //stop everything if 'X' clicked
             if (actionCode == 50) { 
                 Uint64 now = SDL_GetPerformanceCounter();
                 Uint64 frequency = SDL_GetPerformanceFrequency();
@@ -44,14 +44,15 @@ void bubble_sort(App_Window* app) {
 
             // swap if out of order
             if (tab[j] > tab[j + 1]) {
-                app->stats->memoryAccesses += 3; // tmp read+write + one extra read/write pair approximated
+                app->stats->memoryAccesses += 4; // 2 reads + 2 writes for a swap
 
+                //swap
                 int tmp = tab[j];
                 tab[j] = tab[j + 1];
                 tab[j + 1] = tmp;
                 swapped = 1;
 
-                // visual : show swap result
+                //check events after swap
                 if (!running) { app->running = 0; return; }
                 if (actionCode == 50) { 
                     Uint64 now = SDL_GetPerformanceCounter();
@@ -61,7 +62,7 @@ void bubble_sort(App_Window* app) {
                     app->stats->startTicks = 0; 
                     return;
                 }
-                
+                // visual : show swap result
                 renderApp(app, j, j + 1);
                 SDL_Delay(1);
             }
@@ -286,14 +287,14 @@ static int partition(App_Window* app, int low, int high) {
 // Recursive helper: sorts range [low..high] if app->running is true.
 static void quick_sort_recursive(App_Window* app, int low, int high) {
     if (low < high && app->running) {   
-        // 1) find the pivot
+        // find the pivot
         int pivot_index = partition(app, low, high);
         if (pivot_index == -1) return;
 
-        // 2) sort the left side (before the pivot)
+        // sort the left side (before the pivot)
         quick_sort_recursive(app, low, pivot_index - 1);
         
-        // 3) sort the right side (after the pivot)
+        // sort the right side (after the pivot)
         quick_sort_recursive(app, pivot_index + 1, high);
     }
 }
@@ -302,10 +303,10 @@ static void quick_sort_recursive(App_Window* app, int low, int high) {
 void quick_sort(App_Window* app) {
     int size = N; // global length from main.h
 
-    // 1) start the recursive sort on the entire array (0 to size - 1)
+    //start the recursive sort on the entire array (0 to size - 1)
     quick_sort_recursive(app, 0, size - 1);
 
-    // 2) final render (only if the sort wasn't stopped)
+    // final render (only if the sort wasn't stopped)
     if (app->running) {
         renderApp(app, -1, -1);
     }

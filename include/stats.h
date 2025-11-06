@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL_stdinc.h> // for Uint64
 
-//struct for the timer
+//Structure to hold all performance stats
 typedef struct {
     double executionTime;
     long long comparisons;
@@ -21,9 +21,8 @@ Stats_t* createStats();
 // pointer to the structure to reset.
 void resetStats(Stats_t* stats);
 
-// free the memory of the Stats struct
+// frees the memory of the Stats struct
 // Implemented in stats.c)
-// pointer to the structure to free
 void freeStats(Stats_t* stats);
 
 #endif // STATS_H
