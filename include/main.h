@@ -7,6 +7,7 @@
 
 #include "stats.h" 
 
+// Main structure to hold all application components
 typedef struct {
     // SDL components
     SDL_Window* window;
@@ -20,6 +21,7 @@ typedef struct {
     int running;
     int selectedAlgorithm;
 
+    // Pointer to the statistics data
     Stats_t* stats;
 
 } App_Window;

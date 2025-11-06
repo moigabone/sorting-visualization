@@ -3,7 +3,6 @@
 #include <string.h> // For memset (to zero-out memory)
 
 // Allocates memory for Stats_t structure and initializes it.
-// A pointer to the newly created Stats_t struct, or NULL on failure.
 Stats_t* createStats() {
     // Allocate memory on the heap for the structure
     Stats_t* stats = (Stats_t*)malloc(sizeof(Stats_t));
@@ -20,7 +19,6 @@ Stats_t* createStats() {
 }
 
 // Resets all counters within the Stats_t structure to zero.
-// A pointer to the Stats_t struct to be reset.
 void resetStats(Stats_t* stats) {
     if (stats == NULL) {
         // Safety check, do nothing if the pointer is invalid
